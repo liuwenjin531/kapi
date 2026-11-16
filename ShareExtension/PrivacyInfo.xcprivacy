@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  隐私清单（分享扩展）：不追踪、不收集任何数据。
+  UserDefaults 用 1C8F.1（App Group 内读写）：沿用阶段 0 的声明。扩展目前没有直接用 UserDefaults，
+  多声明不会被拒，将来要用 Group 的 UserDefaults 时不必回来补。
+  文件时间戳：扩展只把文件拷进 App Group 的 Inbox，不读时间戳，不需要声明。
+  文件时间戳的读取都在主 App（乐库扫描）里，见 Sources/Resources/PrivacyInfo.xcprivacy。
+  如果以后扩展里加了读文件日期的代码，要回来补 FileTimestamp。
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>1C8F.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

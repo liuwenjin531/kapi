@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  隐私清单（小组件扩展）：不追踪、不收集任何数据。
+  扩展只读主 App 写进 App Group 容器的快照文件和封面缩略图，不碰 UserDefaults、文件时间戳、
+  磁盘空间、系统开机时间这几类需要声明理由的 API，所以 NSPrivacyAccessedAPITypes 为空。
+  如果以后在扩展里用了这些 API，要回来补。
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+</dict>
+</plist>

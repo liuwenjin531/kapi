@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  隐私清单：不追踪、不收集任何数据。
+  文件时间戳（NSPrivacyAccessedAPICategoryFileTimestamp）：乐库扫描读文件创建 / 修改时间，
+  用于「添加日期」排序和元数据缓存键，所以要声明。两个理由都写：
+  - C617.1：向用户展示 / 使用 App 自己容器内文件的时间戳。官方写的范围是 app container、
+    app group container 和 CloudKit 容器，iCloud 云盘里 App 自己的 ubiquity 容器不在字面列表里，
+    不能只押它；
+  - 3B52.1：用户主动授权给 App 的文件（经「文件」选择器 / 分享导入）。
+  两个一起声明不会被拒（理由可以多填），比押错一个收到 ITMS-91053 稳妥。
+  实际上线后如果苹果确认 ubiquity 容器归 C617.1，可以删掉 3B52.1。
+  不要用磁盘剩余空间、系统开机时间这两类 API。
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+				<string>3B52.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

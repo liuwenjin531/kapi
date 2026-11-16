@@ -1,0 +1,202 @@
+# 本文件是工程配置的唯一事实来源，Kapi.xcodeproj 由它生成且不入库。
+#
+# 改构建设置（签名、Bundle ID、Info.plist 项、entitlements）一律改这里，
+# 然后跑 xcodegen generate。在 Xcode 界面里改会被下一次生成静默冲掉。
+# 只改代码内容则不受影响，Sources/ 下新增文件后重新生成一次即可纳入。
+#
+# Info.plist 和 entitlements 也由本文件生成，落在 Config/（已 gitignore），不要手改。
+
+name: Kapi
+options:
+  bundleIdPrefix: com.liuwenjin
+  deploymentTarget:
+    iOS: "27.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    # 必须写在这里而不是只在 Xcode 界面里选：xcodegen generate 会重建工程文件，界面上选的会被冲掉
+    DEVELOPMENT_TEAM: LBQTK9D664
+    CODE_SIGN_STYLE: Automatic
+    # 新 App 在 App Store 是全新条目：版本 3.0，build 从 1 起。
+    # 改了 NSUbiquitousContainers 后要提高 build 号，「文件」App 才会刷新显示
+    MARKETING_VERSION: "3.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  Kapi:
+    type: application
+    platform: iOS
+    sources:
+      - Sources
+    info:
+      path: Config/Info.plist
+      properties:
+        CFBundleDisplayName: 卡皮音乐
+        # xcodegen 生成的 Info.plist 默认写死 1.0 / 1，不读上面的构建设置，必须显式引用；
+        # 主 App 和扩展的版本号上架时要求一致
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        # 分享扩展和主 App 都从这里读 App Group 名，不在代码里写死
+        KapiAppGroup: group.com.liuwenjin.kapi
+        # 声明支持中文，系统提供的文案（左滑「删除」、弹窗按钮、文件选择器等）才会出中文，
+        # 否则一律退回英文。App 自己的字符串本来就是中文，与此无关
+        CFBundleDevelopmentRegion: zh-Hans
+        CFBundleLocalizations: [zh-Hans]
+        UIBackgroundModes: [audio]
+        # 不用加密，免出口合规问卷
+        ITSAppUsesNonExemptEncryption: false
+        # 声明能处理音视频，App 才会出现在「共享 / 用其他应用打开」的列表里。
+        # Alternate 表示只是备选打开方式，不去抢系统默认
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: 音频
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.audio]
+          - CFBundleTypeName: 视频
+            CFBundleTypeRole: Viewer
+            LSHandlerRank: Alternate
+            LSItemContentTypes: [public.movie]
+        LSSupportsOpeningDocumentsInPlace: true
+        # 本机乐库（默认）就是沙盒 Documents/：打开后「文件 › 我的 iPhone › 卡皮音乐」里能看到，可以直接拖歌进去
+        UIFileSharingEnabled: true
+        # 让容器里的 Documents/ 以「卡皮音乐」的名字出现在 iCloud 云盘里，乐库根目录就是它
+        NSUbiquitousContainers:
+          iCloud.com.liuwenjin.kapi:
+            NSUbiquitousContainerIsDocumentScopePublic: true
+            NSUbiquitousContainerName: 卡皮音乐
+            NSUbiquitousContainerSupportedFolderLevels: Any
+        # 小组件点击回到 App 用的链接（kapi://player、kapi://favorites/play），
+        # 只触发「打开播放页」「播放最爱」两个无害动作。这不是任何 NS…UsageDescription
+        CFBundleURLTypes:
+          - CFBundleURLName: com.liuwenjin.kapi
+            CFBundleURLSchemes: [kapi]
+        UILaunchScreen: {}
+        # 放开横屏只是让「转」成为可能；实际只有全屏看 MV 时才允许，
+        # 其余页面由 AppDelegate + OrientationGate 锁回竖屏
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    entitlements:
+      path: Config/Kapi.entitlements
+      properties:
+        # 扩展和主 App 各有各的沙盒，App Group 是它们唯一的交接点
+        com.apple.security.application-groups:
+          - group.com.liuwenjin.kapi
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.com.liuwenjin.kapi
+        com.apple.developer.icloud-services:
+          - CloudDocuments
+        com.apple.developer.ubiquity-container-identifiers:
+          - iCloud.com.liuwenjin.kapi
+    dependencies:
+      - target: KapiShare
+      - target: KapiWidgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.liuwenjin.kapi
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+
+  # 系统分享面板里的「卡皮音乐」。文档类型注册只管「文件」App 的「打开方式」，
+  # 微信这类 App 自己弹的分享面板只认扩展，所以这个 target 不能省。
+  # 扩展不碰 iCloud 容器，只把文件放进 App Group 交给主 App，所以没有 iCloud 权限
+  KapiShare:
+    type: app-extension
+    platform: iOS
+    sources:
+      - ShareExtension
+      # 收件箱读写逻辑主 App 与扩展共用一份，放在 Sources/Storage，扩展这里单独引入
+      - path: Sources/Storage/ShareInbox.swift
+    info:
+      path: Config/ShareInfo.plist
+      properties:
+        CFBundleDisplayName: 卡皮音乐
+        # xcodegen 生成的 Info.plist 默认写死 1.0 / 1，不读上面的构建设置，必须显式引用；
+        # 主 App 和扩展的版本号上架时要求一致
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        KapiAppGroup: group.com.liuwenjin.kapi
+        CFBundleDevelopmentRegion: zh-Hans
+        CFBundleLocalizations: [zh-Hans]
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.share-services
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).ShareViewController
+          NSExtensionAttributes:
+            # 只在分享音视频或 .lrc 歌词时出现。用谓词而不是 NSExtensionActivationSupportsFileWithMaxCount，
+            # 后者对任意文件都激活，分享个 PDF 也会冒出来。
+            # .lrc 没有系统标准 UTI（来源 App 常把它报成动态类型），而按 public.data / public.plain-text
+            # 放宽会让 PDF、照片、普通文本也冒出卡皮音乐，所以在下面 UTImportedTypeDeclarations 里
+            # 自己声明一个按扩展名 lrc 匹配的类型，规则只认它
+            NSExtensionActivationRule: 'SUBQUERY(extensionItems, $item, SUBQUERY($item.attachments, $a, ANY $a.registeredTypeIdentifiers UTI-CONFORMS-TO "public.audiovisual-content" OR ANY $a.registeredTypeIdentifiers UTI-CONFORMS-TO "com.liuwenjin.kapi.lrc").@count > 0).@count > 0'
+        UTImportedTypeDeclarations:
+          - UTTypeIdentifier: com.liuwenjin.kapi.lrc
+            UTTypeDescription: LRC 歌词
+            UTTypeConformsTo: [public.plain-text]
+            UTTypeTagSpecification:
+              public.filename-extension: [lrc]
+    entitlements:
+      path: Config/KapiShare.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.liuwenjin.kapi
+    settings:
+      base:
+        # 扩展的 ID 必须以主 App 的 ID 为前缀
+        PRODUCT_BUNDLE_IDENTIFIER: com.liuwenjin.kapi.share
+
+  # 主屏幕小组件「正在播放」。小组件是另一个进程，只靠主 App 写进 App Group 的快照文件画界面，
+  # 所以不碰 iCloud 容器，也没有 iCloud 权限。
+  # 和主 App 共用三份代码：Sources/Widget（快照模型、时间线、Intent、跳转链接）和 Theme.swift（配色）
+  KapiWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Widgets
+      - path: Sources/Widget
+      - path: Sources/UI/Common/Theme.swift
+    info:
+      path: Config/WidgetsInfo.plist
+      properties:
+        CFBundleDisplayName: 卡皮音乐
+        # 主 App 和扩展的版本号上架时要求一致，同分享扩展
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        KapiAppGroup: group.com.liuwenjin.kapi
+        CFBundleDevelopmentRegion: zh-Hans
+        CFBundleLocalizations: [zh-Hans]
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: Config/KapiWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.liuwenjin.kapi
+    settings:
+      base:
+        # 扩展的 ID 必须以主 App 的 ID 为前缀
+        PRODUCT_BUNDLE_IDENTIFIER: com.liuwenjin.kapi.widgets
+
+  # 纯逻辑单元测试，只测 Sources 里与界面无关的部分
+  KapiTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests
+    dependencies:
+      - target: Kapi
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.liuwenjin.kapi.tests
+        GENERATE_INFOPLIST_FILE: YES
+
+schemes:
+  Kapi:
+    build:
+      targets:
+        Kapi: all
+    test:
+      targets:
+        - KapiTests

@@ -1,0 +1,19 @@
+# 工程文件由 xcodegen 从 project.yml 生成，不入库：
+# 入库只会带来无意义的冲突，克隆后跑一次 xcodegen generate 即可
+*.xcodeproj
+# xcodegen 生成的 Info.plist 与 entitlements
+Config/
+
+# 构建产物
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# 可重建的临时文件
+temp/
+
+# 本地环境
+.DS_Store
+.claude/settings.local.json
+.idea/
